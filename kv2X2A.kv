@@ -1,0 +1,50 @@
+<Layout1>
+  output1:output1
+  g1:g1
+  g2:g2
+  BoxLayout:
+    orientation:'vertical'
+    size:root.width,root.height
+    TextInput:
+      id:output1
+      font_size:app.fs2
+    BoxLayout:
+      size_hint:(1, .3)
+      BoxLayout:
+        size_hint:(.3,1)
+        orientation:'vertical'
+        Label:
+          text:'Gleichung 1'
+          font_size:app.fs1
+        Label:
+          text:'Gleichung 2'
+          font_size:app.fs1
+      BoxLayout:
+        size_hint:(.7,1)
+        orientation:'vertical'
+        TextInput:
+          id:g1
+          font_size:app.fs2
+          multiline:False
+        TextInput:
+          id:g2
+          font_size:app.fs2
+          multiline:False
+    BoxLayout:
+      size_hint:(1, .2)
+      Button:
+        text:'Test'
+        font_size:app.fs1
+        on_press:root.test1()
+      Button:
+        text:'Lösen'
+        font_size:app.fs1
+        on_press:root.lösen()
+      Button:
+        text:'Reset'
+        font_size:app.fs1
+        on_press:root.reset()
+      Button:
+        text:'Generate'
+        font_size:app.fs1
+        on_press:root.gen()

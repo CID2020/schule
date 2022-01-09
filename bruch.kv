@@ -1,0 +1,102 @@
+<Layout1>
+  llatex:llatex
+  lguide:lguide
+  #z1:z1
+  BoxLayout:
+    orientation:'vertical'
+    size:root.width,root.height
+    BoxLayout:
+      id:llatex #here is the latex
+    BoxLayout: #eingabe
+      size_hint:(1,None)
+      height:160
+      width:root.width
+      
+      BoxLayout:
+        orientation:'vertical'
+        Spinner:
+          size_hint:(1,None)
+          height:60
+          id:z1
+          text:'Zähler 1'
+          font_size:app.fs2
+          values:app.ln
+          on_text:root.funkz1(z1.text)
+          background_normal:''
+          background_color:app.cl1
+        Label:
+          text:'----' #bruchstrich
+          font_size:app.fs0
+          #background_color:(1,1,0,1)
+        Spinner:
+          id:n1
+          text:'Nenner 1'
+          font_size:app.fs2
+          values:app.ln
+          on_text:root.funkn1(n1.text)
+          background_normal:''
+          background_color:app.cl1
+      Spinner:
+        id:op
+        text:'+-*/'
+        font_size:app.fs2
+        values:app.lv
+        on_text:root.funkop(op.text)
+        background_normal:''
+        background_color:app.cl1
+      BoxLayout:
+        orientation:'vertical'
+        Spinner:
+          id:z2
+          text:'Zähler 2'
+          font_size:app.fs2
+          values:app.ln
+          on_text:root.funkz2(z2.text)
+          background_normal:''
+          background_color:app.cl1
+        Label:
+          text:'----'
+          font_size:app.fs0
+        Spinner:
+          id:n2
+          text:'Nenner 2'
+          font_size:app.fs2
+          values:app.ln
+          on_text:root.funkn2(n2.text)
+          background_normal:''
+          background_color:app.cl1
+      Label:
+        text:'='
+        font_size:app.fs0
+      Label:
+        text:'?'
+        font_size:app.fs0
+    Label:
+      id:lguide
+      size_hint:(1,None)
+      height:50
+      width:root.width
+      text:'(Aufgabe selber eingeben oder eine zufällige erzeugen)'
+      font_size:20
+      background_normal:''
+      background_color:(1, 0, 0, 1)
+    BoxLayout: #Button
+      size_hint:(1,None)
+      height:50
+      width:root.width
+      Button:
+        text:'Aufgabe'
+        font_size:app.fs1
+        on_press:root.generate()
+      Button:
+        text:'Lösung'
+        font_size:app.fs1
+        on_press:root.answer()
+      Button:
+        text:'Reset'
+        font_size:app.fs1
+        on_press:root.reset()
+      #Button:
+      #  text:'Test1'
+      #  font_size:app.fs1
+      #  on_press:root.test1()
