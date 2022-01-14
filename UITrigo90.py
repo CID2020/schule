@@ -72,21 +72,21 @@ class Trigo90():
       s2=s*math.sin(w)
       s3=s*math.cos(w)
       self.gd+=f'sinα=a/c\n'
-      self.gd+=f'a=c*sinα={s}*sin{round(math.degrees(w))}={s}*{round(math.sin(w))}={round(s2,r4)}\n'
-      self.gd+=f'b=c*cosα={s}*cos{round(math.degrees(w))}={s}*{round(math.cos(w))}={round(s3,r4)}\n'
+      self.gd+=f'a=c ⸱ sinα={s} ⸱ sin{round(math.degrees(w))}={s} ⸱ {round(math.sin(w),r4)}={round(s2,r4)}\n'
+      self.gd+=f'b=c ⸱ cosα={s} ⸱ cos{round(math.degrees(w))}={s} ⸱ {round(math.cos(w),r4)}={round(s3,r4)}\n'
     else:
       s2=s*math.tan(w)
       s3=s/math.cos(w)
       if abc==1:
         self.gd+=f'tanβ=b/a\n'
-        self.gd+=f'b=a*tanα={s}*tan{round(math.degrees(w))}={s}*{round(math.tan(w))}={round(s2,r4)}\n'
+        self.gd+=f'b=a ⸱ tanα={s} ⸱ tan{round(math.degrees(w))}={s} ⸱ {round(math.tan(w),r4)}={round(s2,r4)}\n'
         self.gd+=f'cosβ=a/c\n'
-        self.gd+=f'c=a/cosβ={s}/cos{round(math.degrees(w))}={s}/{round(math.cos(w))}={round(s3,r4)}\n'
+        self.gd+=f'c=a/cosβ={s}/cos{round(math.degrees(w))}={s}/{round(math.cos(w),r4)}={round(s3,r4)}\n'
       elif abc==2:
         self.gd+=f'tanα=a/b\n'
-        self.gd+=f'a=b*tanα={s}*tan{round(math.degrees(w))}={s}*{round(math.tan(w))}={round(s2,r4)}\n'
+        self.gd+=f'a=b ⸱ tanα={s} ⸱ tan{round(math.degrees(w))}={s} ⸱ {round(math.tan(w),r4)}={round(s2,r4)}\n'
         self.gd+=f'cosα=b/c\n'
-        self.gd+=f'c=b/cosα={s}/cos{round(math.degrees(w))}={s}/{round(math.cos(w))}={round(s3,r4)}\n'
+        self.gd+=f'c=b/cosα={s}/cos{round(math.degrees(w))}={s}/{round(math.cos(w),r4)}={round(s3,r4)}\n'
     return s2,s3
   def proof(self):
     for e in self.inp:
