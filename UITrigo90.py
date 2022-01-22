@@ -9,17 +9,16 @@ class Trigo90():
     self.gd='' #guide
     self.wn=self.sn=0 #winkel / seite nummer
     self.fmessage=['',
-    'Alle Eingaben muss Zahlen sein', #1
+    'Alle Eingaben müssen Zahlen sein', #1
     'Alle Zahlen müssen größer als 0 sein',
-    'Die Summe der Winkel muss kleiner als 180° sein', #3
-    'Bitte genau 2 Zahlen eingeben (außer der gegebenen 90°)',
+    'Die Winkel Summe ist kleiner als 180°', #3
+    'Bitte genau 2 Zahlen eingeben',
     'Bitte mindestens 1 Seitelänge eingeben', #5
-    'Die größere Seite muss der größeren Winkel gegenüber sein',
-    'I only need 3 values']
+    'Die große Seite ist der große Winkel gegenüber']
   def gen(self):
     if bool(random.getrandbits(1)): #2 Seite sind gegeben
       a1=random.randint(0,2)
-      if a1==0: # 2 katheter sind gegeben
+      if a1==0: # 2 kathete sind gegeben
         s1=random.randint(2,9)
         s2=random.randint(2,9)
         sl=[s1,s2,float('nan')]
@@ -96,7 +95,7 @@ class Trigo90():
         except ValueError: return 1
         if num1<=0: return 2
         self.v1.append(num1)
-    if sum(self.v1[3:])>=180: return 3
+    if sum([0 if math.isnan(i) else i for i in self.v1[3:]])>=180: return 3
     for i in range(3):
       if not math.isnan(self.v1[i]): self.sn+=1
       if not math.isnan(self.v1[i+3]): self.wn+=1
@@ -136,7 +135,7 @@ class Trigo90():
 class App():
   def __init__(self, master):
     self.master = master
-    root.geometry('800x800+300+100') #size and initial position
+    root.geometry('500x500+200+100') #size and initial position
     root.title('Trigonometrie')
     root.option_add('*Font', '30')
     self.v1=[]
@@ -145,46 +144,46 @@ class App():
     self.step1=0
     self.solved=False
     self.tosolve=False
-    
+    tw=6 #text width
     # self.defaultFont = Tk.font.nametofont("TkDefaultFont")
     # self.defaultFont.configure(size=20)
     root.option_add( "*font", "lucida 16" )
     self.f1=Frame(root)
     self.la=Label(self.f1, text="a:").grid(row=0)
-    self.ea=Entry(self.f1,width=10)
+    self.ea=Entry(self.f1,width=tw)
     self.ea.grid(row=0,column=1)
     self.lb=Label(self.f1, text="b:").grid(row=0,column=2)
-    self.eb=Entry(self.f1,width=10)
+    self.eb=Entry(self.f1,width=tw)
     self.eb.grid(row=0,column=3)
     self.lc=Label(self.f1, text="c:").grid(row=0,column=4)
-    self.ec=Entry(self.f1,width=10)
+    self.ec=Entry(self.f1,width=tw)
     self.ec.grid(row=0,column=5)
-    self.lal=Label(self.f1, text="Alpha:").grid(row=1)
-    self.eal=Entry(self.f1,width=10)
+    self.lal=Label(self.f1, text="α:").grid(row=1)
+    self.eal=Entry(self.f1,width=tw)
     self.eal.grid(row=1,column=1)
-    self.lbe=Label(self.f1, text="Beta:").grid(row=1,column=2)
-    self.ebe=Entry(self.f1,width=10)
+    self.lbe=Label(self.f1, text="β:").grid(row=1,column=2)
+    self.ebe=Entry(self.f1,width=tw)
     self.ebe.grid(row=1,column=3)
-    self.lga=Label(self.f1, text="Gamma:").grid(row=1,column=4)
-    self.ega=Entry(self.f1,width=10)
+    self.lga=Label(self.f1, text="γ:").grid(row=1,column=4)
+    self.ega=Entry(self.f1,width=tw)
     self.ega.insert(0,90)
-    self.ega["state"] = DISABLED
+    self.ega.configure(state='disabled')#["state"] = DISABLED
     self.ega.grid(row=1,column=5)
     self.f1.pack()
     self.le=[self.ea,self.eb,self.ec,self.eal,self.ebe,self.ega]#list of entry
     self.f2=Frame(root)
-    self.b1=Button(self.f2,text='Generate a test',command=self.gen)
+    self.b1=Button(self.f2,text='Neu',command=self.gen)
     self.b1.grid(row=0)
-    self.b2=Button(self.f2,text='Show me the answer',command=self.answer)
+    self.b2=Button(self.f2,text='Lösung',command=self.answer)
     self.b2.grid(row=0,column=2)
-    self.b3=Button(self.f2,text='Reset',command=self.reset)
+    self.b3=Button(self.f2,text='Zurücksetzen',command=self.reset)
     self.b3.grid(row=0,column=3)
-    self.b4=Button(self.f2,text='Test1',command=self.test1)
-    self.b4.grid(row=0,column=4)
+    # self.b4=Button(self.f2,text='Test1',command=self.test1)
+    # self.b4.grid(row=0,column=4)
     self.f2.pack()
     self.lf=Label(root,text='')
     self.lf.pack()
-    self.ea=Text(root, width=40, height=20)
+    self.ea=Text(root, width=24, height=9)
     self.ea.pack()
   def gen(self):
     if not self.tosolve:
@@ -206,12 +205,10 @@ class App():
             self.le[n1].insert(0,round(math.degrees(self.v1[n1])))
     self.lf.config(text = err)
     self.ea.insert(END,gd)
-  def showg(self): #show guide
-    pass
   def answer(self):
     gd1=''
     if not self.solved:
-      trigo1=Trigo90(self.sammeln())
+      trigo1=Trigo90([i.get() for i in self.le])
       self.fehler,self.gd,self.v1=trigo1.exe1()
       if self.gd: self.gd.pop() #pop the empty element
       self.solved=True
@@ -229,12 +226,6 @@ class App():
     self.lf.config(text = '')
     self.show()
     self.ea.delete("1.0","end")
-  def sammeln(self):
-    v1=[]
-    for n1 in range(len(self.le)): v1.append(self.le[n1].get())
-    return v1
-  def test1(self):
-    self.ea.insert(0,'a²')
 if __name__ == '__main__':
   root = Tk()
   app = App(root)

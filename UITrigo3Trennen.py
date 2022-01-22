@@ -6,22 +6,36 @@ import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import random
 matplotlib.use('TkAgg')
-r4=4 #round to 4. digit after decimal
+r4=3 #round to 4. digit after decimal
 class Trigo():
-  def __init__(self,v1=(),ns=0,nw=0):
-    self.v1=v1
-    self.ns=ns
-    self.nw=nw
-    self.fehler=0  #number of side, winkel
+  def __init__(self,inp=[]):
+    self.inp=inp
+    self.v1=[]
+    self.sn=self.wn=self.fehler=0  #number of side, winkel
     self.lt=[] #latex text
-    self.fmessage=['Please give at least 3 values',
-    'Please make sure the inputs are numbers.(Write decimal as point)',
-    'Please give at least 1 side length',
-    'You cannot build a triangle with the 3 given number',
-    'I only need 3 values',
-    'All numbers must be positive',
-    'Each angle in a triangle must be smaller than 180',
-    'The sum of the two given angles must be smaller than 180']
+    self.fmessage=['',
+    'Alle Eingaben müssen Zahlen sein', #1
+    'Alle Zahlen müssen größer als 0 sein',
+    'Die Winkel Summe ist kleiner als 180°', #3
+    'Bitte genau 3 Zahlen eingeben',
+    'Bitte mindestens 1 Seitelänge eingeben', #5
+    'Man kann kein Dreieck mit den Zahlen aufbauen']
+  def proof(self):
+    for e in self.inp:
+      if not len(e): self.v1.append(float('nan'))
+      else:
+        try:num1=float(e)
+        except ValueError: return 1
+        if num1<=0: return 2
+        self.v1.append(num1)
+    if sum([0 if math.isnan(i) else i for i in self.v1[3:]])>=180:return 3
+    for i in range(3):
+      if not math.isnan(self.v1[i]): self.sn+=1
+      if not math.isnan(self.v1[i+3]): self.wn+=1
+    if self.sn+self.wn!=3: return 4
+    if not self.sn: return 5
+    # fehler 6
+    return 0
   def generate(self):
     #in the function, it is shorter to write, 
     # therefore write seite länge as sl
@@ -60,7 +74,8 @@ class Trigo():
         random.shuffle(sl)
         wl=[float('nan'),float('nan'),w1]
         random.shuffle(wl)
-    return tuple(sl+wl)
+    self.v1=sl+wl
+    return self.v1
   def sins(self,nw1,nw2,ns1,ns2,w1,w2,s1): #calculate a side with sin satz
     s2=s1/math.sin(w1)*math.sin(w2)
     tempt='\\dfrac{'+ns2+'}{sin\\'+nw2+'}=\\dfrac{'+ns1+'}{sin\\'+nw1+'}\\|\\cdot sin\\'+nw2
@@ -107,21 +122,18 @@ class Trigo():
     tempt+=str(round(math.degrees(w3),r4))
     self.lt.append(tempt)
     return w3
-  def calculate(self):
+  def cal(self):
     a,b,c,alphade,betade,gammade=self.v1
     alpha=math.radians(alphade)
     beta=math.radians(betade)
     gamma=math.radians(gammade)
-    if self.ns+self.nw>3:
-      self.fehler=4
-    elif self.ns==3:
+    if self.sn==3:
       if a+b>c and b+c>a and a+c>b:
         alpha=self.cosw('alpha','b','c','a',b,c,a,)
         beta=self.sinw('alpha','beta','a','b',alpha,a,b)
         gamma=self.summe(3,alpha,beta)
-      else:
-        self.fehler=3
-    elif self.ns==2 and self.nw==1:
+      else: self.fehler=6
+    elif self.sn==2 and self.wn==1:
       if math.isnan(self.v1[0])^math.isnan(self.v1[3]) and math.isnan(self.v1[1])^math.isnan(self.v1[4]):
         if math.isnan(a):#sws
           a=self.coss('alpha','b','c','a',alpha,b,c)
@@ -159,27 +171,31 @@ class Trigo():
             gamma=self.summe(3,alpha,beta)
             c=self.sins('alpha','gamma','a','c',alpha,gamma,a)
         except ValueError:
-          self.fehler=3
-    elif self.ns==1 and self.nw==2:
+          self.fehler=6
+    elif self.sn==1 and self.wn==2:
       if math.isnan(alpha):
         alpha=self.summe(1,beta,gamma)
       elif math.isnan(beta):
         beta=self.summe(2,alpha,gamma)
       elif math.isnan(gamma):
         gamma=self.summe(3,alpha,beta)
-      if min(alpha,beta,gamma)<=0:
-        self.fehler=7
-      else:
-        if not math.isnan(a):
-          b=self.sins('alpha','beta','a','b',alpha,beta,a)
-          c=self.sins('alpha','gamma','a','c',alpha,gamma,a)
-        elif not math.isnan(b):
-          a=self.sins('beta','alpha','b','a',beta,alpha,b)
-          c=self.sins('beta','gamma','b','c',beta,gamma,b)
-        elif not math.isnan(c):
-          b=self.sins('gamma','beta','c','b',gamma,beta,gamma)
-          a=self.sins('gamma','alpha','c','a',gamma,alpha,gamma)
-    return self.fehler,[a,b,c,alpha,beta,gamma],self.lt
+      if not math.isnan(a):
+        b=self.sins('alpha','beta','a','b',alpha,beta,a)
+        c=self.sins('alpha','gamma','a','c',alpha,gamma,a)
+      elif not math.isnan(b):
+        a=self.sins('beta','alpha','b','a',beta,alpha,b)
+        c=self.sins('beta','gamma','b','c',beta,gamma,b)
+      elif not math.isnan(c):
+        b=self.sins('gamma','beta','c','b',gamma,beta,gamma)
+        a=self.sins('gamma','alpha','c','a',gamma,alpha,gamma)
+    self.v1=[a,b,c,alpha,beta,gamma]
+    #return self.fehler,[a,b,c,alpha,beta,gamma],self.lt
+  def exe1(self):
+    f1=self.proof()
+    if not f1:
+      self.cal()
+      f1=self.fehler #second chance to catch error
+    return self.fmessage[f1],self.lt,self.v1
 class Application():
   def __init__(self, master):
     self.master = master
@@ -187,20 +203,10 @@ class Application():
     root.title('Trigonometrie')
     root.option_add('*Font', '30')
     self.v1=[]
-    self.fehler=0
     self.lt=[]
     self.step1=0
-    self.solved=False
-    self.tosolve=False
-    self.fmessage=['Please give at least 3 values',
-    'Please make sure the inputs are numbers.(Write decimal as point)',
-    'Please give at least 1 side length',
-    'You cannot build a triangle with the 3 given number',
-    'I only need 3 values',
-    'All numbers must be positive',
-    'Each angle in a triangle must be smaller than 180',
-    'The sum of the two given angles must be smaller than 180']
-    
+    self.solved=self.tosolve=False
+
     self.f1=Frame(root)
     self.la=Label(self.f1, text="a:").grid(row=0)
     self.ea=Entry(self.f1,width=10)
@@ -223,11 +229,11 @@ class Application():
     self.f1.pack()
     self.le=[self.ea,self.eb,self.ec,self.eal,self.ebe,self.ega]#list of entry
     self.f2=Frame(root)
-    self.b1=Button(self.f2,text='Generate a test',command=self.generate)
+    self.b1=Button(self.f2,text='Neu',command=self.generate)
     self.b1.grid(row=0)
-    self.b2=Button(self.f2,text='Show me the answer',command=self.answer)
+    self.b2=Button(self.f2,text='Lösung',command=self.answer)
     self.b2.grid(row=0,column=2)
-    self.b3=Button(self.f2,text='Reset',command=self.reset)
+    self.b3=Button(self.f2,text='Zurücksetzen',command=self.reset)
     self.b3.grid(row=0,column=3)
     self.f2.pack()
     self.lf=Label(root,text='')
@@ -248,7 +254,7 @@ class Application():
   def latex1(self,lt): #a list of text
     for n1 in range(len(lt)):
       tmptext = "$"+lt[n1]+"$"
-      self.wx.text(0.1, 0.9-n1/8, tmptext, fontsize = 20) #position-n1
+      self.wx.text(0.1, 0.9-n1/7.5, tmptext, fontsize = 20) #position-n1
     self.canvas.draw()
     self.wx.clear()
   def reset(self):
@@ -275,40 +281,11 @@ class Application():
           else:
             self.le[n1].insert(0,round(math.degrees(self.v1[n1])))
   def answer(self):
+    gd1=''
     if not self.solved:
-      self.v1=[]
-      self.ns=self.nw=0
-      for n1 in range(len(self.le)):
-        str1=self.le[n1].get()
-        if not len(str1):
-          self.v1.append(float('nan'))
-        else:
-          try:num1=float(str1)
-          except ValueError:
-            self.fehler=1
-            break
-          if num1<=0: self.fehler=5 # negative number
-          self.v1.append(num1)
-          if n1<3:self.ns+=1
-          else:
-            self.nw+=1
-            if num1>=180: self.fehler=6 #angle is bigger than 180
-      if self.fehler:
-        self.lf.config(text =self.fmessage[self.fehler])
-        self.fehler=0
-      elif self.ns+self.nw<3:
-        self.lf.config(text =self.fmessage[0])
-      elif self.ns==0:
-        self.lf.config(text =self.fmessage[2])
-      else:
-        trigo1=Trigo(self.v1,self.ns,self.nw)
-        self.fehler,self.v1,self.lt=trigo1.calculate()
-        if self.fehler:
-          self.lf.config(text = self.fmessage[self.fehler])
-          self.fehler=0
-        else:
-          self.solved=True
-          self.lf.config(text = 'calculation: (continue clicking)')
+      trigo1=Trigo([i.get() for i in self.le])
+      self.fehler,self.lt,self.v1=trigo1.exe1()
+      self.solved=True
     if self.step1<len(self.lt):
       self.step1+=1
       self.show()
@@ -319,4 +296,3 @@ if __name__ == '__main__':
     app.answer()
   root.bind("<Return>",keyp)
   root.mainloop()
-#improvement: change the number of Gleichungen with input

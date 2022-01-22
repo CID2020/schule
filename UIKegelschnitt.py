@@ -21,13 +21,13 @@ BUTTON_STYLE = {
   "clicked_font_color": BLACK,
   "hover_font_color": ORANGE,}
 length=600
-bottom=int(length/20)
+bottom=length//20
 class geo():
   def __init__(self,screen):
     self.screen=screen
     self.tshift=Vec(5,5) #text gap
     self.ePunkte=[] #save point on the ellipse
-    self.rpunkt=int(bottom/6) #radius of a point
+    self.rpunkt=bottom//6 #radius of a point
   def dist(self,v1,v2):
     return ((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)**(1/2)
   def strecke(self,v1,v2):
@@ -235,8 +235,6 @@ class hyperbel(geo):
       self.screen.blit(font1.render(
         self.guide[self.step1],True,ORANGE),(bottom/2,length-bottom))
     pg.display.flip()
-      #pg.image.save(self.screen,dir1+name1+str(nameIndex)+'.png')
-      #nameIndex+=1
 class parabel(geo):
   def __init__(self,screen):
     super().__init__(screen)

@@ -3,7 +3,6 @@
 from written term to list'''
 import numpy as np
 import random
-
 from numpy.typing import _128Bit
 def pm():
     if bool(random.getrandbits(1)): return 1
@@ -56,7 +55,7 @@ def gcd(a, b):
   return gcd(b, a % b)
 sp='     '
 abc=list('abcdefghijklmnopqrstuvwxyz')
-def bu(s1):
+def bu(s1): #break up a string to term
   k1=False
   if '(' and ')' in s1:
     s2=s1.split('(', 1)[1].split(')')[0]
@@ -89,7 +88,9 @@ def bu(s1):
   if k1:
     l1[l1.index('z')]=t1
   return l1
-class Term():
+class Term(): 
+  #[faktor1,Var1,faktor2,Var2,faktor3,''empty for a number]
+  #Var can also be another Term in ()
   def __init__(self,l1):
     if type(l1)==list:
       self.l1=l1
@@ -114,7 +115,7 @@ class Term():
   def __repr__(self):
     return self.str1()
   def __add__(self,other): #plus oder minus term
-    return Term(self.l1+other.l1)
+    return Term(self.l1+other.l1) #simply append it, summary later
   def __sub__(self,other):
     l1=other.l1.copy() #should not change the oritinal other
     for i in range(0,len(l1),2): l1[i]*=-1
@@ -172,7 +173,7 @@ class Term():
     if len(self.l1)==2 and self.l1[1] and self.l1[0]==1:
       return self.l1[1] #one variable, factor is 1, return the var
     else: return False
-  def is_v(self):
+  def is_v(self): #is it a var with faktor -1
     if len(self.l1)==2 and self.l1[1] and self.l1[0]==-1:
       return self.l1[1]
     else: return False
@@ -196,55 +197,45 @@ class Term():
       if self.l1[i]: l1+=self.l1[i-1:i+1]
     if l1: return Term(l1)
     else: return False
-  def hasz(self):
+  def hasz(self): #has a zahl
     if self.l1.count('')>0:
       i1=self.l1.index('')
       return Term(self.l1[i1-1:i1+1])
     else: return False
-  def einsetz(self,v,t):
+  def einsetz(self,v,t): #in which var einsetzen, which term wird eingesetz
     l1=self.l1.copy()
     if l1.count(v)>0:
       i1=l1.index(v)
       l1[i1]=t
     return Term(l1)
 class Glei1():
-  def __init__(self,tl,tr): #list on the left/right
+  def __init__(self,tl,tr,nr=0): #list on the left/right
     if type(tl)==Term:
       self.tl=tl
       self.tr=tr
     elif type(tl)==str or type(tl)==list:
       self.tl=Term(tl)
       self.tr=Term(tr)
+    self.nr=nr
   def str1(self):
     return self.tl.str1()+'='+self.tr.str1()
   def __repr__(self):
     return self.str1()
   def __mul__(self,f1):
-    tl1=self.tl*f1
-    tr1=self.tr*f1
-    return Glei1(tl1,tr1)
+    return Glei1(self.tl*f1,self.tr*f1)
   def __sub__(self,t1):
-    tl1=self.tl-t1
-    tr1=self.tr-t1
-    return Glei1(tl1,tr1)
+    return Glei1(self.tl-t1,self.tr-t1)
   def __add__(self,other):
-    tl=self.tl+other.tl
-    tr=self.tr+other.tr
-    return Glei1(tl,tr)
+    return Glei1(self.tl+other.tl,self.tr+other.tr)
   def zus(self):
-    tl=self.tl.zus()
-    tr=self.tr.zus()
-    return Glei1(tl,tr)
+    return Glei1(self.tl.zus(),self.tr.zus())
   def kla(self):
-    tl1=self.tl.kla()
-    tr1=self.tr.kla()
-    return Glei1(tl1,tr1)
+    return Glei1(self.tl.kla(),self.tr.kla())
   def vlösen(self,gn): #nach var lösen, gleichung number
     gd=''
     g3=None
     if self.tl.isv() or self.tr.isv():
       stu=1
-      gd+=f'{gn} wird eingesetzt\n'
       g3=self*1
     elif self.tl.is_v() or self.tr.is_v():
       stu=2
@@ -323,7 +314,7 @@ class Glei1():
     return [g2,gd]
 
 class Glei22():
-  def __init__(self,s1,s2):
+  def __init__(self,s1,s2,nr=1):
     if type(s1)==str:
       self.g1=Glei1(*s1.split('='))
       self.g2=Glei1(*s2.split('='))
@@ -331,6 +322,7 @@ class Glei22():
       self.g1=s1
       self.g2=s2
     self.gd=''
+    self.nr=nr
   def lösen(self,ad=False): #only use additionsverfahren
     self.gd+=self.g1.str1()+sp+'(1)\n'
     self.gd+=self.g2.str1()+sp+'(2)\n'
@@ -351,11 +343,15 @@ class Glei22():
     lö1=g3.lösen()
     self.gd+=lö1[1]
     #zurück einsetzen
-    if rt1[0]==rt2[0]==5 or ad: #gelöst mit einsetzen
-      self.gd+='in (1) zurückeinsetzen\n'
+    if rt1[0]==rt2[0]==5 or ad or rt1[0]==1: 
+      #gelöst mit addition or direkt einsetzen
+      self.gd+='in (1) einsetzen\n'
+      g4=self.g1.einsetz(lö1[0])
+    elif rt2[0]==1: #g2 wurde direkt eingesetzt
+      self.gd+='in (2) einsetzen\n'
       g4=self.g1.einsetz(lö1[0])
     else:
-      self.gd+='in (3) zurückeinsetzen\n'
+      self.gd+='in (3) einsetzen\n'
       if rt1[0]<=rt2[0]:
         g4=rt1[1].einsetz(lö1[0])
       else: g4=rt2[1].einsetz(lö1[0])
@@ -367,7 +363,8 @@ class Glei22():
     for i in range(len(l1)-1,0,-1):
       if l1[i]==l1[i-1]: l1.pop(i)
     return '\n'.join(l1)
-  def faktor(self): #find out the factor, which will bei multiplied
+  def faktor(self): 
+    #find out the factor, which will bei multiplied, only in addition
     x1,y1=self.g1.tl.l1[0],self.g1.tl.l1[2]
     x2,y2=self.g2.tl.l1[0],self.g2.tl.l1[2]
     if x1==-x2 or y1==-y2:
@@ -386,17 +383,15 @@ class Glei22():
     elif not y2%y1:
       if y1*y2>0:return -y2//y1,1
       elif y1*y2<0:return -y2//y1,1
-    else:#worst case
+    else:#worst case, both equations have to multiply
       gdx=gcd(x1,x2) #greatest common divider
       lmx=abs(x1*x2/gdx) #least common multiple
       gdy=gcd(y1,y2)
       lmy=abs(y1*y2/gdy)
-      if lmy>lmx>1:
-        return x2//gdx,-x1//gdx
+      if lmy>lmx>1: return x2//gdx,-x1//gdx
         # if x1*x2<0:return x2//gdx,x1//gdx
         # elif x1*x2>0:return -x2//gdx,x1//gdx
-      else:
-        return y2//gdy,-y1//gdy
+      else: return y2//gdy,-y1//gdy
         # if y1*y2<0:return y2//gdy,y1//gdy
         # elif y1*y2>0:return -y2//gdy,y1//gdy
   def add1(self):
@@ -449,10 +444,6 @@ class Glei33():
     for i1 in range(3):
       for i2 in range(3):
         a1[i1][i2]=self.g[i2].tl.l1[lt[i1]]
-    # x1,y1,z1=self.g1.tl.l1[0],self.g1.tl.l1[2],self.g1.tl.l1[4]
-    # x2,y2,z2=self.g2.tl.l1[0],self.g2.tl.l1[2],self.g2.tl.l1[4]
-    # x3,y3,z3=self.g3.tl.l1[0],self.g3.tl.l1[2],self.g3.tl.l1[4]
-    # a2=np.array([[x1,x2,x3],[y1,y2,y3],[z1,z2,z3]])
     agcd=np.zeros((3,3),dtype='int8')
     f1=np.zeros((3,3,2),dtype='int8')
     #at pos x1, saves factor um x1 und x3 zu löschen
@@ -514,11 +505,9 @@ class Glei33():
     return self.gd
 
 if __name__=='__main__':
-  # g1=Glei1(*'6y+8=-2x'.split('='))
-  # g2=Glei1(*'4x-3y=2'.split('='))
-  # gg=gen22()
-  # ins1=gg.lösen()
-  # print(ins1)
-  g33_1=gen33()
+  pass
+#wenn ausklammern nichts macht, sollte kein extra schrift schreiben
+#2nd layout
+  g33_1=Glei33('x=5','x+y=7','2x+3y-z=3')
   ins1=g33_1.lösen()
   print(ins1)

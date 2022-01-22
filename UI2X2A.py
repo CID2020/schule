@@ -4,12 +4,15 @@ from kivy.lang import Builder
 from c2X2A import *
 Builder.load_file('kv2X2A.kv')
 class Layout1(Widget):
-  def lösen(self):
+  def lö1(self):
     g1=Glei1(*self.g1.text.split('='))
     g2=Glei1(*self.g2.text.split('='))
     gg=Glei22(g1,g2)
     ins1=gg.lösen()
     self.output1.text=ins1[0]
+  def lösen(self):
+    try: self.lö1()
+    except: self.output1.text='Fehler!'
   def reset(self):
     self.g1.text=self.g2.text=self.output1.text=''
   def gen(self):
