@@ -1,6 +1,11 @@
 '''replace a normal variable with term, init with a *args
 +- problem, klammern auflösen, zusammenfassen,
-from written term to list'''
+from written term to list
+Term has l1
+Glei1 has tl and tr
+Glei2 has g1 and g2
+Glei3 has g[i]'''
+import pyperclip
 import numpy as np
 import random
 from numpy.typing import _128Bit
@@ -14,7 +19,7 @@ def r19():
     a=random.choices(numbers, weights=chance1,k=30)
     a=[x*pm() for x in a]
     return a
-def gen2(x1,y1,v1,v2,rlr): #generate 1 Gleichung
+def gen2(x1,y1,v1,v2,rlr=False): #generate 1 Gleichung, right-left-random
   r1=r19() #a1x+b1y+c1=0
   a1=r1.pop()
   b1=r1.pop()
@@ -43,13 +48,21 @@ def gen22(rv=False,rlr=False):
   g1=gen2(x1,y1,v1,v2,rlr)
   g2=gen2(x1,y1,v1,v2,rlr)
   return Glei22(g1,g2)
-def gen33():
+def gen33(type1=3):
   r1=r19()
   x,y,z=r1.pop(),r1.pop(),r1.pop()
-  g1=gen3(x,y,z)
-  g2=gen3(x,y,z)
-  g3=gen3(x,y,z)
-  return Glei33(g1,g2,g3)
+  if type1==3: #general case 3X3
+    g1=gen3(x,y,z)
+    g2=gen3(x,y,z)
+    g3=gen3(x,y,z)
+  elif type1==1:
+    g1=gen3(x,y,z)
+    g2=gen2(y,z,'y','z')
+    c3=r1.pop()
+    d3=c3*z
+    g3=Glei1(str(c3)+'z',str(d3))
+  lö=f'x={x}, y={y}, z={z}\n\n'
+  return Glei33(g1,g2,g3),lö
 def gcd(a, b):
   if b == 0:return a
   return gcd(b, a % b)
@@ -96,6 +109,12 @@ class Term():
       self.l1=l1
       if not l1: self.l1=[0,'']
     elif type(l1)==str: self.l1=bu(l1)
+  # def __init__(self,l1:list): #overloading  
+  #   #if type(l1)==list:
+  #   self.l1=l1
+  #   if not l1: self.l1=[0,'']
+  # def __init__(self,l1:str):
+  #   self.l1=bu(l1)
   def str1(self):
     s1=''
     for i in range(0,len(self.l1),2):
@@ -234,7 +253,10 @@ class Glei1():
   def vlösen(self,gn): #nach var lösen, gleichung number
     gd=''
     g3=None
-    if self.tl.isv() or self.tr.isv():
+    if len(self.tl.l1)==2: #3x=6, no y
+      stu=0
+      g3=self*1
+    elif self.tl.isv() or self.tr.isv():
       stu=1
       g3=self*1
     elif self.tl.is_v() or self.tr.is_v():
@@ -297,7 +319,7 @@ class Glei1():
       if gn: gd+=self.str1()+sp+f'({gn})\n'
       else: gd+=self.str1()+'\n'
     return [self,gd]
-  def df(self): #durch faktor rechnen
+  def df(self): #durch faktor rechnen, last step
     if self.tl.l1[1]: # var is on the left
       return Glei1(self.tl/self.tl.l1[0],self.tr/self.tl.l1[0])
     else: return Glei1(self.tr/self.tr.l1[0],self.tl/self.tr.l1[0])
@@ -305,53 +327,68 @@ class Glei1():
     gd=''
     gd+=self.str1()+'\n'
     self=self.kla()
-    gd+=self.str1()+'\n'
     g2=self.zus()
+    if g2.str1()!=self.str1(): #if zus did something
+      gd+=self.str1()+'\n' #this is duplicated with vzt
     rt1=g2.vzt() #return [gleichung, guide]
-    gd+=rt1[1]
+    #if from var zahl trennen returns nothing,
+    #at least add the last step of zusammenfassen
+    if rt1[1]: gd+=rt1[1]
+    else: gd+=g2.str1()+'\n'
     g2=rt1[0].df()
     gd+=g2.str1()+'\n'
     return [g2,gd]
-
 class Glei22():
-  def __init__(self,s1,s2,nr=1):
+  def __init__(self,s1,s2,nr=1,ad=True):
     if type(s1)==str:
       self.g1=Glei1(*s1.split('='))
       self.g2=Glei1(*s2.split('='))
     elif type(s1)==Glei1:
       self.g1=s1
       self.g2=s2
+    self.ad=ad #only use additionsverfahren
     self.gd=''
     self.nr=nr
-  def lösen(self,ad=False): #only use additionsverfahren
-    self.gd+=self.g1.str1()+sp+'(1)\n'
-    self.gd+=self.g2.str1()+sp+'(2)\n'
-    rt1=self.g1.vlösen('(1)') #nach variable lösen und vergleich
-    rt2=self.g2.vlösen('(2)')
-    if rt1[0]==rt2[0]==5 or ad:
+  def lösen(self): #only use additionsverfahren
+    self.gd+=f'{self.g1.str1()}{sp}({self.nr})\n'
+    self.gd+=f'{self.g2.str1()}{sp}({self.nr+1})\n'
+    #self.gd+=self.g2.str1()+sp+'(2)\n'
+    rt1=self.g1.vlösen(f'({self.nr})') #nach variable lösen und vergleich
+    rt2=self.g2.vlösen(f'({self.nr+1})')
+    if rt1[0]==0:
+      g3=self.g1
+    elif rt1[1]==0:
+      g3=self.g2
+    elif rt1[0]==rt2[0]==5 or self.ad:
       g3=self.add1()
     elif rt1[0]<=rt2[0]:
       self.gd+=rt1[2]
-      if rt1[0]==1: self.gd+='(1) in (2) einsetzen\n' #direkt einsetzen
-      else: self.gd+='(3) in (2) einsetzen\n'
+      if rt1[0]==1: self.gd+=f'({self.nr}) in ({self.nr+1}) einsetzen\n' #direkt einsetzen
+      else: self.gd+=f'({self.nr+2}) in ({self.nr+1}) einsetzen\n'
       g3=self.g2.einsetz(rt1[1])
     else:
       self.gd+=rt2[2]
-      if rt2[0]==1: self.gd+='(2) in (1) einsetzen\n'
-      else: self.gd+='(3) in (1) einsetzen\n'
+      if rt2[0]==1: self.gd+=f'({self.nr+1}) in ({self.nr}) einsetzen\n'
+      else: self.gd+=f'({self.nr+2}) in ({self.nr}) einsetzen\n'
       g3=self.g1.einsetz(rt2[1])
     lö1=g3.lösen()
     self.gd+=lö1[1]
     #zurück einsetzen
-    if rt1[0]==rt2[0]==5 or ad or rt1[0]==1: 
+    if rt1[0]==0:
+      self.gd+=f'in ({self.nr+1}) einsetzen\n'
+      g4=self.g2.einsetz(lö1[0])
+    elif rt1[0]==0:
+      self.gd+=f'in ({self.nr}) einsetzen\n'
+      g4=self.g2.einsetz(lö1[0])
+    elif rt1[0]==rt2[0]==5 or self.ad or rt1[0]==1: 
       #gelöst mit addition or direkt einsetzen
-      self.gd+='in (1) einsetzen\n'
+      self.gd+=f'in ({self.nr}) einsetzen\n'
       g4=self.g1.einsetz(lö1[0])
     elif rt2[0]==1: #g2 wurde direkt eingesetzt
-      self.gd+='in (2) einsetzen\n'
+      self.gd+=f'in ({self.nr+1}) einsetzen\n'
       g4=self.g1.einsetz(lö1[0])
     else:
-      self.gd+='in (3) einsetzen\n'
+      self.gd+=f'in ({self.nr+2}) einsetzen\n'
       if rt1[0]<=rt2[0]:
         g4=rt1[1].einsetz(lö1[0])
       else: g4=rt2[1].einsetz(lö1[0])
@@ -364,9 +401,16 @@ class Glei22():
       if l1[i]==l1[i-1]: l1.pop(i)
     return '\n'.join(l1)
   def faktor(self): 
+    #before calculate factor, I should check the length of the equation
+    #if the length is 2, it's already like 3x=6
+    if len(self.g1.tl.l1)==2:
+      return 0,5
+    elif len(self.g2.tl.l1)==2:
+      return 5,0
     #find out the factor, which will bei multiplied, only in addition
-    x1,y1=self.g1.tl.l1[0],self.g1.tl.l1[2]
-    x2,y2=self.g2.tl.l1[0],self.g2.tl.l1[2]
+    else:
+      x1,y1=self.g1.tl.l1[0],self.g1.tl.l1[2]
+      x2,y2=self.g2.tl.l1[0],self.g2.tl.l1[2]
     if x1==-x2 or y1==-y2:
       return 1,1
     elif x1==x2 or y1==y2:
@@ -402,28 +446,28 @@ class Glei22():
     self.g2=rt2[0]
     f1=self.faktor()
     if f1[0]==f1[1]==1:
-      self.gd+=('(1)+(2)\n')
+      self.gd+=(f'({self.nr})+({self.nr+1})\n')
       g3=self.g1+self.g2
     elif f1[0]==1:
       self.gd+=self.g2.str1()+' | * '+str(f1[1])+'\n'
       g2=self.g2*f1[1]
-      self.gd+=f'{g2.str1()}'+sp+'(3)\n'
-      self.gd+='(1) + (3)\n'
+      self.gd+=f'{g2.str1()}{sp}({self.nr+2})\n'
+      self.gd+=f'({self.nr}) + ({self.nr+2})\n'
       g3=self.g1+g2
     elif f1[1]==1:
       self.gd+=self.g1.str1()+' | * '+str(f1[0])+'\n'
       g1=self.g1*f1[0]
-      self.gd+=f'{g1.str1()}'+sp+'(3)\n'
-      self.gd+='(2) + (3)\n'
+      self.gd+=f'{g1.str1()}{sp}({self.nr+2})\n'
+      self.gd+=f'({self.nr+1}) + ({self.nr+2})\n'
       g3=g1+self.g2
     else:
-      self.gd+='(1) | * '+str(f1[0])+'\n'
+      self.gd+=f'({self.nr}) | * {str(f1[0])}\n'
       g1=self.g1*f1[0]
-      self.gd+=f'{g1.str1()}'+sp+'(3)\n'
-      self.gd+='(2) | * '+str(f1[1])+'\n'
+      self.gd+=f'{g1.str1()}{sp}({self.nr+2})\n'
+      self.gd+=f'({self.nr+1}) | * {str(f1[1])}\n'
       g2=self.g2*f1[1]
-      self.gd+=f'{g2.str1()}'+sp+'(4)\n'
-      self.gd+='(3) + (4)\n'
+      self.gd+=f'{g2.str1()}{sp}({self.nr+3})\n'
+      self.gd+=f'({self.nr+2}) + ({self.nr+3})\n'
       g3=g1+g2
     return g3
 class Glei33():
@@ -440,7 +484,7 @@ class Glei33():
     self.g=[self.g1,self.g2,self.g3]
   def faktor(self):
     lt=[0,2,4]
-    a1=np.zeros((3,3),dtype='int8')
+    a1=np.zeros((3,3),dtype='int8') #save all the factor in gleichungen
     for i1 in range(3):
       for i2 in range(3):
         a1[i1][i2]=self.g[i2].tl.l1[lt[i1]]
@@ -465,49 +509,91 @@ class Glei33():
     pos=np.where(f3==np.amin(f3))
     px,py=pos[0][0],pos[1][0]
     return py,f1[px][py],f1[px][py-1]
+    #py which equation is used twice to delete a var
   def lösen(self):
     for i in range(3):
-      self.gd+=self.g[i].str1()+sp+f'({abc[i]})\n'
-    rt=self.faktor()
-    i=rt[0]
-    ip1=i+1 if i+1<3 else i-2
-    il=i-1
-    ab='abc'
-    g4=self.g[il]*rt[1][0]+self.g[i]*(-rt[1][1])
-    g5=self.g[ip1]*rt[2][0]+self.g[il]*(-rt[2][1])
-    self.gd+=f'({ab[il]})*({rt[1][0]})+({ab[i]})*({-rt[1][1]})=(1)\n'
-    self.gd+=f'({ab[ip1]})*({rt[2][0]})+({ab[il]})*({(-rt[2][1])})=(2)\n'
-    # if rt[0]==2:
-    #   g4=self.g2*rt[1][0]+self.g3*(-rt[1][1])
-    #   g5=self.g1*rt[2][0]+self.g2*(-rt[2][1])
-    #   self.gd+=f'(2)*'
-    # elif rt[0]==1:
-    #   g4=self.g1*rt[1][0]+self.g2*(-rt[1][1])
-    #   g5=self.g3*rt[2][0]+self.g1*(-rt[2][1])
-    # elif rt[0]==0:
-    #   g4=self.g3*rt[1][0]+self.g1*(-rt[1][1])
-    #   g5=self.g2*rt[2][0]+self.g3*(-rt[2][1])
-    # self.gd+=f'(a)*{f1[0]}+(b)*{f1[1]}\n'
-    # self.gd+=f'(a)*{f1[2]}+(c)*{f1[3]}\n'
-    # g4=self.g1*f1[0]+self.g2*f1[1]
-    # g5=self.g1*f1[2]+self.g3*f1[3]
-    g4=g4.zus()
-    g5=g5.zus()
-    # self.gd+=g4.str1()+sp+'(4)\n'
-    # self.gd+=g5.str1()+sp+'(5)\n'
-    g22=Glei22(g4,g5)
-    rt=g22.lösen(True)
-    self.gd+=rt[0]
-    g6=self.g1.einsetz(rt[1])
-    g7=g6.einsetz(rt[2])
-    lö3=g7.lösen()
-    self.gd+=lö3[1]
+      print(self.g[i].str1())
+      self.gd+=self.g[i].str1()+sp+f'({i+1})\n'
+    if len(self.g[2].tl.l1)==2 and len(self.g[1].tl.l1)==4:
+      # 2nd equation has 2 var and 3nd has 1 var, triangle shape
+      self.g.append(self.g[2].df()) #divide factor to solve g[2]
+      self.gd+=f'(3) | :{self.g[2].tl.l1[0]}\n'
+      self.gd+=f'{self.g[3]}{sp}(4)\n'
+      self.gd+='in (2) einsetzen\n'
+      gt1=self.g[1].einsetz(self.g[3]) #gleichung temp 1
+      rt1=gt1.lösen() #lösen return gleichung(lösung) und guide
+      self.g.append(rt1[0])
+      self.gd+=rt1[1]
+      self.gd=self.gd[:-1] #remove the \n
+      self.gd+=f'{sp}(5)\n'
+      self.gd+='(4) und (5) in (1) einsetzen\n'
+      gt2=self.g[0].einsetz(self.g[3])
+      gt3=gt2.einsetz(self.g[4])
+      rt2=gt3.lösen()
+      self.gd+=rt2[1]
+    else:
+      rt=self.faktor()
+      i=rt[0]
+      ip1=i+1 if i+1<3 else i-2
+      il=i-1
+      g4=self.g[il]*rt[1][0]+self.g[i]*(-rt[1][1])
+      g5=self.g[ip1]*rt[2][0]+self.g[il]*(-rt[2][1])
+      self.gd+=f'({i})*({rt[1][0]})+({i+1})*({-rt[1][1]}){sp}(4)\n'
+      self.gd+=g4.str1()+sp+'(4)\n'
+      self.gd+=f'({ip1+1})*({rt[2][0]})+({i})*({(-rt[2][1])}){sp}(5)\n'
+      self.gd+=g5.str1()+sp+'(5)\n'
+      # if rt[0]==2:
+      #   g4=self.g2*rt[1][0]+self.g3*(-rt[1][1])
+      #   g5=self.g1*rt[2][0]+self.g2*(-rt[2][1])
+      #   self.gd+=f'(2)*'
+      # elif rt[0]==1:
+      #   g4=self.g1*rt[1][0]+self.g2*(-rt[1][1])
+      #   g5=self.g3*rt[2][0]+self.g1*(-rt[2][1])
+      # elif rt[0]==0:
+      #   g4=self.g3*rt[1][0]+self.g1*(-rt[1][1])
+      #   g5=self.g2*rt[2][0]+self.g3*(-rt[2][1])
+      # self.gd+=f'(a)*{f1[0]}+(b)*{f1[1]}\n'
+      # self.gd+=f'(a)*{f1[2]}+(c)*{f1[3]}\n'
+      # g4=self.g1*f1[0]+self.g2*f1[1]
+      # g5=self.g1*f1[2]+self.g3*f1[3]
+      g4=g4.zus()
+      g5=g5.zus()
+      # self.gd+=g4.str1()+sp+'(4)\n'
+      # self.gd+=g5.str1()+sp+'(5)\n'
+      g22=Glei22(g4,g5,4,False)
+      rt=g22.lösen()
+      self.gd+=rt[0]
+      g6=self.g1.einsetz(rt[1])
+      g7=g6.einsetz(rt[2])
+      lö3=g7.lösen()
+      self.gd+='in (1) einsetzen\n'
+      self.gd+=lö3[1]
     return self.gd
-
+def g33m(type1=3):
+  str1=''
+  str2=''
+  for i in range(10):
+    g33_1,l1=gen33(type1)
+    str1+=str(i+1)+')\n'
+    str2+=str(i+1)+')\n'
+    str1+=g33_1.g1.str1()+'\n'
+    str1+=g33_1.g2.str1()+'\n'
+    str1+=g33_1.g3.str1()+'\n\n'
+    str2+=l1
+  return str1+'\n'+str2
 if __name__=='__main__':
   pass
-#wenn ausklammern nichts macht, sollte kein extra schrift schreiben
-#2nd layout
-  g33_1=Glei33('x=5','x+y=7','2x+3y-z=3')
-  ins1=g33_1.lösen()
-  print(ins1)
+# -4x-4y-2z=-28
+# x+4y+2z=16
+# -5x+y+5z=-8
+
+  # g3=g33m(3)
+  # print(g3)
+
+  #g3=Glei33('-4x-4y-2z=-28','x+4y+2z=16','-5x+y+5z=-8')
+  #print(g3.lösen())
+  g1=Glei22('-2x+2y=-10','x+y=9',1,False)
+  lö1=g1.lösen()
+  string = "".join(str(element) for element in lö1)
+  print(string)
+  pyperclip.copy(string)

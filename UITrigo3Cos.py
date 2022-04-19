@@ -51,7 +51,7 @@ class Trigo():
       wl=[float('nan'),float('nan'),float('nan')]
     elif a1==1: #wsw
       w1=random.randint(20,160)
-      w2=math.radians(random.randint(20,180-w1-20))
+      w2=math.radians(random.randint(min(20,180-w1-20),max(20,180-w1-20)))
       w1=math.radians(w1)
       wl=[w1,w2,float('nan')]
       random.shuffle(wl)
@@ -130,22 +130,23 @@ class Trigo():
     if self.sn==3:
       if a+b>c and b+c>a and a+c>b:
         alpha=self.cosw('alpha','b','c','a',b,c,a,)
-        beta=self.sinw('alpha','beta','a','b',alpha,a,b)
+        beta=self.cosw('beta','a','c','b',a,c,b) #mit cos ist sicherer
+        #beta=self.sinw('alpha','beta','a','b',alpha,a,b)
         gamma=self.summe(3,alpha,beta)
       else: self.fehler=6
     elif self.sn==2 and self.wn==1:
       if math.isnan(self.v1[0])^math.isnan(self.v1[3]) and math.isnan(self.v1[1])^math.isnan(self.v1[4]):
         if math.isnan(a):#sws
           a=self.coss('alpha','b','c','a',alpha,b,c)
-          beta=self.sinw('alpha','beta','a','b',alpha,a,b)
+          beta=self.cosw('beta','a','c','b',a,c,b)
           gamma=self.summe(3,alpha,beta)
         elif math.isnan(b):
           b=self.coss('beta','a','c','b',beta,a,c)
-          alpha=self.sinw('beta','alpha','b','a',beta,b,a)
+          alpha=self.cosw('alpha','b','c','a',b,c,a,)
           gamma=self.summe(3,alpha,beta)
         elif math.isnan(c):
           c=self.coss('gamma','a','b','c',gamma,a,b)
-          beta=self.sinw('gamma','beta','c','b',gamma,c,b)
+          beta=self.cosw('beta','a','c','b',a,c,b)
           alpha=self.summe(1,beta,gamma)
       else:
         try:
@@ -186,8 +187,8 @@ class Trigo():
         a=self.sins('beta','alpha','b','a',beta,alpha,b)
         c=self.sins('beta','gamma','b','c',beta,gamma,b)
       elif not math.isnan(c):
-        b=self.sins('gamma','beta','c','b',gamma,beta,gamma)
-        a=self.sins('gamma','alpha','c','a',gamma,alpha,gamma)
+        b=self.sins('gamma','beta','c','b',gamma,beta,c)
+        a=self.sins('gamma','alpha','c','a',gamma,alpha,c)
     self.v1=[a,b,c,alpha,beta,gamma]
     #return self.fehler,[a,b,c,alpha,beta,gamma],self.lt
   def exe1(self):
@@ -197,8 +198,8 @@ class Trigo():
       f1=self.fehler #second chance to catch error
     return self.fmessage[f1],self.lt,self.v1
 class Application():
-  def __init__(self, master):
-    self.master = master
+  def __init__(self,root):
+    self.root = root
     root.geometry('800x800+300+100') #size and initial position
     root.title('Trigonometrie')
     root.option_add('*Font', '30')
@@ -208,33 +209,30 @@ class Application():
     self.solved=self.tosolve=False
 
     self.f1=Frame(root)
-    self.la=Label(self.f1, text="a:").grid(row=0)
+    Label(self.f1, text="a:").grid(row=0)
     self.ea=Entry(self.f1,width=10)
     self.ea.grid(row=0,column=1)
-    self.lb=Label(self.f1, text="b:").grid(row=0,column=2)
+    Label(self.f1, text="b:").grid(row=0,column=2)
     self.eb=Entry(self.f1,width=10)
     self.eb.grid(row=0,column=3)
-    self.lc=Label(self.f1, text="c:").grid(row=0,column=4)
+    Label(self.f1, text="c:").grid(row=0,column=4)
     self.ec=Entry(self.f1,width=10)
     self.ec.grid(row=0,column=5)
-    self.lal=Label(self.f1, text="Alpha:").grid(row=1)
+    Label(self.f1, text="α:").grid(row=1)
     self.eal=Entry(self.f1,width=10)
     self.eal.grid(row=1,column=1)
-    self.lbe=Label(self.f1, text="Beta:").grid(row=1,column=2)
+    Label(self.f1, text="β:").grid(row=1,column=2)
     self.ebe=Entry(self.f1,width=10)
     self.ebe.grid(row=1,column=3)
-    self.lga=Label(self.f1, text="Gamma:").grid(row=1,column=4)
+    Label(self.f1, text="γ:").grid(row=1,column=4)
     self.ega=Entry(self.f1,width=10)
     self.ega.grid(row=1,column=5)
     self.f1.pack()
     self.le=[self.ea,self.eb,self.ec,self.eal,self.ebe,self.ega]#list of entry
     self.f2=Frame(root)
-    self.b1=Button(self.f2,text='Neu',command=self.generate)
-    self.b1.grid(row=0)
-    self.b2=Button(self.f2,text='Lösung',command=self.answer)
-    self.b2.grid(row=0,column=2)
-    self.b3=Button(self.f2,text='Zurücksetzen',command=self.reset)
-    self.b3.grid(row=0,column=3)
+    Button(self.f2,text='Neu',command=self.generate).grid(row=0)
+    Button(self.f2,text='Lösung',command=self.answer).grid(row=0,column=2)
+    Button(self.f2,text='Zurücksetzen',command=self.reset).grid(row=0,column=3)
     self.f2.pack()
     self.lf=Label(root,text='')
     self.lf.pack()
@@ -272,7 +270,7 @@ class Application():
         e1.delete(0,END)
     elif self.step1==len(self.lt):
       if self.step1:
-        self.lf.config(text = 'Finished')
+        self.lf.config(text='Finished')
       for n1 in range(len(self.le)):
         if not len(self.le[n1].get()) and not math.isnan(self.v1[n1]):
           # second condition is used to generate homework
@@ -281,7 +279,6 @@ class Application():
           else:
             self.le[n1].insert(0,round(math.degrees(self.v1[n1])))
   def answer(self):
-    gd1=''
     if not self.solved:
       trigo1=Trigo([i.get() for i in self.le])
       self.fehler,self.lt,self.v1=trigo1.exe1()
@@ -289,6 +286,8 @@ class Application():
     if self.step1<len(self.lt):
       self.step1+=1
       self.show()
+    if self.fehler:
+      self.lf.config(text = self.fehler)
 if __name__ == '__main__':
   root = Tk()
   app = Application(root)

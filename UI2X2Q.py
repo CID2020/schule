@@ -30,9 +30,8 @@ class Application():
         self.t1.pack(side="left", fill="both")
         self.scr1.config(command=self.t1.yview)
     def pm(self):
-        if bool(random.getrandbits(1)): a1=1
-        else: a1=-1
-        return a1
+        if bool(random.getrandbits(1)): return 1
+        else: return -1
     def r19(self):
         numbers=list(range(1,8))
         chance1 = [x+4 for x in numbers]
