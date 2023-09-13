@@ -1,43 +1,33 @@
 #import pyperclip
 import random
 def gcd(a, b):
-  if b == 0:return a
-  return gcd(b, a % b)
+  return a if b==0 else gcd(b, a%b)
 def pm():
-  a1=1 if bool(random.getrandbits(1)) else -1
-  return a1
+  return 1 if random.getrandbits(1) else -1
 def vorf(n1): #vorzeichen vor Faktor
-  if n1>=0:return '+'+vor1(n1)
-  else: return vor1(n1)
+  return '+'+vor1(n1) if n1>=0 else vor1(n1)
 def vorz(n1):
-  if n1>=0:return '+'+str(n1)
-  else: return str(n1)
+  return '+'+str(n1) if n1>=0 else str(n1)
 def vor1(n1): # das 1x problem
   if n1==1:return ''
   elif n1==-1:return '-'
   else: return str(n1)
 def dru(x1,y1,z1): #print the equation
-  str1=vor1(x1)+'x'+vorf(y1)+'y='+str(z1)+'\n'
-  return str1
+  return vor1(x1)+'x'+vorf(y1)+'y='+str(z1)+'\n'
 def add1(x1,y1,z1,x2,y2,z2):
-  str1=(vor1(x1)+'x'+vorf(y1)+'y'+vorf(x2)+'x'+vorf(y2)+'y='
-  +str(z1)+vorz(z2)+'\n')
-  return str1
+  return (vor1(x1)+'x'+vorf(y1)+'y'+vorf(x2)+'x'+vorf(y2)+'y='+str(z1)+vorz(z2)+'\n')
 def zuAdd(n1,n2,buch,z1,z2): #zusammenfassen nach addition, buchstaben
-  str1=vor1(n1+n2)+buch+'='+str(z1+z2)+' |/('+str(n1+n2)+')\n'
-  return str1
+  return vor1(n1+n2)+buch+'='+str(z1+z2)+' |/('+str(n1+n2)+')\n'
 def einsetz(buch,n1,x1,y1,z1):
   if buch=='x':
-    str1=str(x1)+'*('+str(n1)+')'+vorf(y1)+'y='+str(z1)+'\n'
+    return str(x1)+'*('+str(n1)+')'+vorf(y1)+'y='+str(z1)+'\n'
   elif buch=='y':
-    str1=vor1(x1)+'x'+vorz(y1)+'*('+str(n1)+')='+str(z1)+'\n'
-  return str1
+    return vor1(x1)+'x'+vorz(y1)+'*('+str(n1)+')='+str(z1)+'\n'
 def zuEin(buch,n1,m1,z1): #zusammenfassen nach einsetzen, m-mal ergebniss
   if buch=='x':
-    str1=str(m1)+vorf(n1)+'y='+str(z1)+' |-('+str(m1)+')\n'
+    return str(m1)+vorf(n1)+'y='+str(z1)+' |-('+str(m1)+')\n'
   elif buch=='y':
-    str1=str(n1)+'x'+vorz(m1)+'='+str(z1)+' |-('+str(m1)+')\n'
-  return str1
+    return str(n1)+'x'+vorz(m1)+'='+str(z1)+' |-('+str(m1)+')\n'
 def vorl(buch,n1,z1): #vorletzte Schritt
   if buch=='x':buch='y'
   elif buch=='y':buch='x'

@@ -8,7 +8,7 @@ Glei3 has g[i]'''
 import pyperclip
 import numpy as np
 import random
-from numpy.typing import _128Bit
+# from numpy.typing import _128Bit
 def pm():
     if bool(random.getrandbits(1)): return 1
     else: return -1
